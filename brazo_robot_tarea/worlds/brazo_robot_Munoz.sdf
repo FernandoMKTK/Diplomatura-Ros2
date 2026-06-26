@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<!--
+  ============================================================================
+  TAREA — Plantilla para tu brazo robótico en SDF (Gazebo Fortress)
+  ============================================================================
+  Esta plantilla ya trae el "mundo" listo (física, luz, suelo y sistemas).
+  Tu trabajo es completar el MODELO del robot donde aparecen los  TODO .
+
+  Robot objetivo: un BRAZO ROBÓTICO de 2 grados de libertad (2 GDL)
+    - base       : link fijo al suelo (cilindro o caja)
+    - eslabon_1  : primer brazo, unido a la base con un joint REVOLUTE
+    - eslabon_2  : segundo brazo, unido al eslabón 1 con otro joint REVOLUTE
+
+  A diferencia del ejemplo de clase (robot que SE MUEVE por el suelo),
+  aquí el robot está ANCLADO y lo que se mueve son sus articulaciones.
+
+  CÓMO EJECUTARLO:
+    ign gazebo plantilla_brazo_robot.sdf
+    (Gazebo arranca EN PAUSA: pulsa ▶ Play, o lanza con 'ign gazebo -r ...')
+
+  CÓMO MOVER UNA ARTICULACIÓN (ejemplo, una vez completado y CON LA SIM EN
+  MARCHA; requiere el plugin del TODO 10):
+    ign topic -t "/model/brazo/joint/junta_1/0/cmd_pos" \
+              -m ignition.msgs.Double -p "data: 1.0"
+  ============================================================================
+-->
+<sdf version="1.8">
+  <world name="mundo_tarea">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="ignition-gazebo-physics-system"
+            name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="ignition-gazebo-user-commands-system"
+            name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system"
+            name="ignition::gazebo::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sol">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="suelo">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ====== TU ROBOT (COMPLETAR) ==================================== -->
+    <model name="brazo" canonical_link="base">
+
+      <!-- La base va fija al mundo: este joint la "atornilla" al suelo. -->
+      <joint name="fija_al_mundo" type="fixed">
+        <parent>world</parent>
+        <child>base</child>
+      </joint>
+
+      <!-- BASE -->
+      <link name="base">
+        <pose>0 0 0.1 0 0 0</pose>
+        <!-- TODO 1: define <inertial> (masa + inercia) de la base.        -->
+        <!-- TODO 2: define <visual> (p. ej. un cilindro r=0.15 l=0.2).    -->
+        <!-- TODO 3: define <collision> con la MISMA geometría del visual. -->
+      </link>
+
+      <!-- ESLABÓN 1 -->
+      <link name="eslabon_1">
+        <!-- TODO 4: ubica este link con <pose> encima de la base.        -->
+        <!-- TODO 5: <inertial>, <visual> y <collision>                   -->
+        <!--         (p. ej. una caja larga 0.1 x 0.1 x 0.6).             -->
+      </link>
+
+      <!-- TODO 6: JOINT base -> eslabon_1
+           Tipo "revolute". Define <parent>, <child>, <axis><xyz> y unos
+           <limit> realistas (p. ej. lower -1.57, upper 1.57). -->
+
+      <!-- ESLABÓN 2 -->
+      <link name="eslabon_2">
+        <!-- TODO 7: ubícalo en el extremo del eslabón 1.                 -->
+        <!-- TODO 8: <inertial>, <visual> y <collision>.                  -->
+      </link>
+
+      <!-- TODO 9: JOINT eslabon_1 -> eslabon_2 (revolute, con límites). -->
+
+      <!-- TODO 10 (OBLIGATORIO): añade UN JointPositionController POR CADA
+           articulación, para poder comandar su ángulo por tópico y que el
+           brazo realmente se mueva. Sin <topic>, cada uno escucha en
+           /model/brazo/joint/<junta>/0/cmd_pos. Ajusta los nombres de junta.
+
+           <plugin filename="ignition-gazebo-joint-position-controller-system"
+                   name="ignition::gazebo::systems::JointPositionController">
+             <joint_name>junta_1</joint_name>
+             <p_gain>10</p_gain><i_gain>0.1</i_gain><d_gain>1</d_gain>
+           </plugin>
+           <!-- ... y otro plugin igual con <joint_name>junta_2</joint_name> ... -->
+      -->
+
+    </model>
+  </world>
+</sdf>

@@ -1,0 +1,246 @@
+<?xml version="1.0" ?>
+<!--
+  ============================================================================
+  EJEMPLO DE CLASE — Simulación en Gazebo Fortress
+  ============================================================================
+  Robot móvil de tracción diferencial (differential drive).
+
+  Objetivo didáctico: mostrar la anatomía de un archivo SDF y cómo Gazebo
+  convierte esa descripción en un robot que se mueve dentro de un mundo.
+
+  Conceptos que aparecen en este archivo:
+    - <world> ............ el mundo de simulación (gravedad, física, escena)
+    - <plugin> (mundo) ... sistemas que dan vida a la simulación
+    - <model> ............ el robot
+    - <link> ............. cada cuerpo rígido (chasis, ruedas, rueda loca)
+    - <inertial> ......... masa e inercia (¡sin esto el robot no se comporta bien!)
+    - <collision> ........ geometría que "choca" (física)
+    - <visual> ........... geometría que se "ve" (render)
+    - <joint> ............ articulaciones que unen links
+    - <plugin> (modelo) .. DiffDrive: traduce velocidad -> giro de ruedas
+
+  CÓMO EJECUTARLO (Gazebo Fortress):
+    ign gazebo ejemplo_robot_diferencial.sdf
+
+  CÓMO MOVERLO (en otra terminal): publicar una velocidad en /cmd_vel
+    Avanzar:
+      ign topic -t "/cmd_vel" -m ignition.msgs.Twist -p "linear: {x: 0.5}"
+    Girar:
+      ign topic -t "/cmd_vel" -m ignition.msgs.Twist -p "angular: {z: 0.5}"
+    (También se puede usar el plugin "Teleop" de la GUI.)
+  ============================================================================
+-->
+<sdf version="1.8">
+  <world name="mundo_demo">
+
+    <!-- Física: cada cuánto avanza el tiempo de simulación. -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ====== SISTEMAS DEL MUNDO ======================================= -->
+    <!-- Motor de física: integra el movimiento de todos los cuerpos.      -->
+    <plugin filename="ignition-gazebo-physics-system"
+            name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <!-- Procesa comandos del usuario (p. ej. crear/borrar modelos).       -->
+    <plugin filename="ignition-gazebo-user-commands-system"
+            name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <!-- Difunde el estado de la escena a la GUI (para verlo en pantalla). -->
+    <plugin filename="ignition-gazebo-scene-broadcaster-system"
+            name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+
+    <!-- Luz tipo sol: ilumina y proyecta sombras. -->
+    <light type="directional" name="sol">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Suelo: un plano infinito sobre el que rueda el robot. -->
+    <model name="suelo">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ====== EL ROBOT ================================================= -->
+    <!-- canonical_link: el link "raíz" del modelo (su cuerpo principal).   -->
+    <model name="robot_azul" canonical_link="chasis">
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- CHASIS: el cuerpo principal del robot -->
+      <link name="chasis">
+        <pose relative_to="__model__">0.5 0 0.4 0 0 0</pose>
+
+        <!-- Masa e inercia (caja de 2.0 x 1.0 x 0.5 m). -->
+        <inertial>
+          <mass>1.14395</mass>
+          <inertia>
+            <ixx>0.126164</ixx>
+            <iyy>0.416519</iyy>
+            <izz>0.481014</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+
+        <visual name="visual">
+          <geometry><box><size>2.0 1.0 0.5</size></box></geometry>
+          <material>
+            <ambient>0.0 0.0 1.0 1</ambient>
+            <diffuse>0.0 0.0 1.0 1</diffuse>
+            <specular>0.0 0.0 1.0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry><box><size>2.0 1.0 0.5</size></box></geometry>
+        </collision>
+      </link>
+
+      <!-- RUEDA IZQUIERDA:
+           El último valor de la pose (-1.5707 rad en X) "acuesta" el
+           cilindro para que ruede como una rueda. -->
+      <link name="rueda_izquierda">
+        <pose relative_to="chasis">-0.5 0.6 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.145833</ixx>
+            <iyy>0.145833</iyy>
+            <izz>0.125</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.4</radius><length>0.2</length></cylinder></geometry>
+          <material>
+            <ambient>0.2 0.2 0.2 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.4</radius><length>0.2</length></cylinder></geometry>
+        </collision>
+      </link>
+
+      <!-- RUEDA DERECHA -->
+      <link name="rueda_derecha">
+        <pose relative_to="chasis">-0.5 -0.6 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.145833</ixx>
+            <iyy>0.145833</iyy>
+            <izz>0.125</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.4</radius><length>0.2</length></cylinder></geometry>
+          <material>
+            <ambient>0.2 0.2 0.2 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.4</radius><length>0.2</length></cylinder></geometry>
+        </collision>
+      </link>
+
+      <!-- RUEDA LOCA (caster) 
+           Esfera sin motor que da el tercer punto de apoyo y deja al
+           robot equilibrado. Se define un <frame> para ubicarla. -->
+      <frame name="marco_caster" attached_to="chasis">
+        <pose>0.8 0 -0.2 0 0 0</pose>
+      </frame>
+      <link name="caster">
+        <pose relative_to="marco_caster"/>
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><sphere><radius>0.2</radius></sphere></geometry>
+          <material>
+            <ambient>0.2 0.2 0.2 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry><sphere><radius>0.2</radius></sphere></geometry>
+        </collision>
+      </link>
+
+      <!-- ====== ARTICULACIONES (JOINTS) ====== -->
+      <!-- revolute = gira sobre un eje. Aquí las ruedas giran libremente
+           (límites enormes) sobre su eje Z local (que tras rotar la pose
+           apunta hacia el costado del robot). -->
+      <joint name="junta_rueda_izquierda" type="revolute">
+        <parent>chasis</parent>
+        <child>rueda_izquierda</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1.79769e+308</lower>
+            <upper>1.79769e+308</upper>
+          </limit>
+        </axis>
+      </joint>
+
+      <joint name="junta_rueda_derecha" type="revolute">
+        <parent>chasis</parent>
+        <child>rueda_derecha</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1.79769e+308</lower>
+            <upper>1.79769e+308</upper>
+          </limit>
+        </axis>
+      </joint>
+
+      <!-- ball = rótula: la rueda loca gira en cualquier dirección. -->
+      <joint name="junta_caster" type="ball">
+        <parent>chasis</parent>
+        <child>caster</child>
+      </joint>
+
+      <!-- ====== PLUGIN DE CONTROL ======
+           DiffDrive escucha velocidades en el tópico /cmd_vel y las
+           traduce en giros de las dos ruedas motrices. -->
+      <plugin filename="ignition-gazebo-diff-drive-system"
+              name="ignition::gazebo::systems::DiffDrive">
+        <left_joint>junta_rueda_izquierda</left_joint>
+        <right_joint>junta_rueda_derecha</right_joint>
+        <wheel_separation>1.2</wheel_separation>
+        <wheel_radius>0.4</wheel_radius>
+        <odom_publish_frequency>1</odom_publish_frequency>
+        <topic>cmd_vel</topic>
+      </plugin>
+
+    </model>
+  </world>
+</sdf>

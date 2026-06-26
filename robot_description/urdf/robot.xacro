@@ -1,0 +1,220 @@
+<?xml version="1.0"?>
+
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<!-- LINKS -->
+    <link name = "world"></link>
+
+    <link name="base_link">
+        <visual><!-- Desplazamiento para ubicarlos -->
+            <origin xyz="0.000 0.000 0.000" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/base_link.dae"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0.000 0.000 0.000" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/collision/base_link.stl"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+    <link name="link_1">
+        <visual><!-- Desplazamiento para ubicarlos -->
+            <origin xyz="0.000 0.000 0.236" rpy="3.142 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/link_1.dae"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0.000 0.000 0.236" rpy="3.142 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/collision/link_1.stl"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+    <link name="link_2">
+        <visual>
+            <origin xyz = "-0.575 -0.175 0.054" rpy = "1.571 0.000 1.571"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/visual/link_2.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz = "-0.575 -0.175 0.054" rpy = "1.571 0.000 1.571"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/collision/link_2.stl"/>
+            </geometry>
+        </collision>    
+    </link>
+
+    <link name="link_3">
+        <visual>
+            <origin xyz = "-0.175 1.465 0.152" rpy = "1.571 0.000 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/visual/link_3.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz = "-0.175 1.465 0.152" rpy = "1.571 0.000 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/collision/link_3.stl"/>
+            </geometry>
+        </collision>    
+    </link>
+
+    <link name="link_4">
+        <visual>
+            <origin xyz = "-1.515 0.000 0.483" rpy = "0.000 1.571 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/visual/link_4.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz = "-1.515 0.000 0.483" rpy = "0.000 1.571 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/collision/link_4.stl"/>
+            </geometry>
+        </collision>    
+    </link>
+
+    <link name="link_5">
+        <visual>
+            <origin xyz = "-1.210 1.515 -0.048 " rpy = "1.571 0.000 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/visual/link_5.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz = "-1.210 1.515 -0.048 " rpy = "1.571 0.000 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/collision/link_5.stl"/>
+            </geometry>
+        </collision>    
+    </link>
+
+    <link name="link_6">
+        <visual>
+            <origin xyz = "-1.515 0.000 1.359 " rpy = "0.000 1.571 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/visual/link_6.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz = "-1.515 0.000 1.359" rpy = "0.000 1.571 0.000"/>
+            <geometry>
+                <mesh filename = "package://robot_description/meshes/collision/link_6.stl"/>
+            </geometry>
+        </collision> 
+    </link>
+
+    <link name="ur_to_robotiq_adapter">
+        <visual>
+            <origin xyz="0.000 0.000 1.359" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/ur_to_robotiq_adapter.dae"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0.000 0.000 1.359" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/collision/ur_to_robotiq_adapter.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name="robotiq_base">
+        <visual>
+            <origin xyz="0.000 0.000 1.359" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/robotiq_base.dae"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0.000 0.000 1.359" rpy="0.000 0.000 0.000"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/collision/robotiq_base.stl"/>
+            </geometry>
+        </collision>
+    </link>
+
+    
+
+<!-- JOINT -->
+    <joint name="world_to_base_link" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+        <origin xyz="0.000 0.000 0.236" rpy="3.145 0.000 0.000"/>
+        <axis xyz="0.0 0.0 1.0"/>
+    </joint>
+    
+    <joint name="joint_1" type="revolute">
+        <parent link="base_link"/>
+        <child link="link_1"/>
+        <origin xyz = "0.000 0.000 0.236" rpy = "3.142 0.000 0.000"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-3.229" upper="3.229" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <joint name="joint_2" type="revolute">
+        <parent link="link_1"/>
+        <child link="link_2"/>
+        <origin xyz = "0.175 0.054 -0.339" rpy = "1.571 0.000 0.000"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-3.054" upper="1.047" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <joint name="joint_3" type="revolute">
+        <parent link="link_2"/>
+        <child link="link_3"/>
+        <origin xyz = "0.890 0.000 -0.098" rpy = "0.000 0.000 0.000"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-2.094" upper="2.880" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <joint name="joint_4" type="revolute">
+        <parent link="link_3"/>
+        <child link="link_4"/>
+        <origin xyz = "0.308 -0.050 0.152" rpy = "1.571 0.000 -1.571"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-3.142" upper="3.142" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <joint name="joint_5" type="revolute">
+        <parent link="link_4"/>
+        <child link="link_5"/>
+        <origin xyz = "0.000 0.048 -0.727" rpy = "0.000 1.571 1.571"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-2.182" upper="2.182" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <joint name="joint_6" type="revolute">
+        <parent link="link_5"/>
+        <child link="link_6"/>
+        <origin xyz = "0.149 0.000 -0.048" rpy = "1.571 0.000 -1.571"/>
+        <axis xyz="0.0 0.0 1.0 "/>
+        <limit lower="-6.109" upper="6.109" effort="1.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Acople fijo entre el último link del KUKA y el adaptador Robotiq -->
+    <joint name="link_6_to_ur_to_robotiq_adapter" type="fixed">
+        <parent link="link_6"/>
+        <child link="ur_to_robotiq_adapter"/>
+        <origin xyz="0.000 0.000 0.000" rpy="0.000 0.000 0.000"/>
+    </joint>
+
+    <!-- Base Robotiq fija al adaptador -->
+    <joint name="ur_to_robotiq_adapter_to_robotiq_base" type="fixed">
+        <parent link="ur_to_robotiq_adapter"/>
+        <child link="robotiq_base"/>
+        <origin xyz="0.000 0.000 0.011" rpy="0.000 0.000 0.000"/>
+    </joint>
+
+</robot>
