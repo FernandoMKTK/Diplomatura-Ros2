@@ -76,6 +76,33 @@
       <link name="base">
         <pose>0 0 0.1 0 0 0</pose>
         <!-- TODO 1: define <inertial> (masa + inercia) de la base.        -->
+        <link name="chasis">
+        <pose relative_to="__model__">0.5 0 0.4 0 0 0</pose>
+
+        <!-- Masa e inercia (caja de 2.0 x 1.0 x 0.5 m). -->
+        <inertial>
+          <mass>1.14395</mass>
+          <inertia>
+            <ixx>0.126164</ixx>
+            <iyy>0.416519</iyy>
+            <izz>0.481014</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+
+        <visual name="visual">
+          <geometry><box><size>2.0 1.0 0.5</size></box></geometry>
+          <material>
+            <ambient>0.0 0.0 1.0 1</ambient>
+            <diffuse>0.0 0.0 1.0 1</diffuse>
+            <specular>0.0 0.0 1.0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry><box><size>2.0 1.0 0.5</size></box></geometry>
+        </collision>
+      </link>
         <!-- TODO 2: define <visual> (p. ej. un cilindro r=0.15 l=0.2).    -->
         <!-- TODO 3: define <collision> con la MISMA geometría del visual. -->
       </link>
