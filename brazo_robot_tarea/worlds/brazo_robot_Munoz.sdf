@@ -95,51 +95,142 @@
             </cylinder>
           </geometry>
           <material>
-            <ambient>0.0 0.0 1.0 1</ambient>
-            <diffuse>0.0 0.0 1.0 1</diffuse>
-            <specular>0.0 0.0 1.0 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
         <!-- TODO 3: define <collision> con la MISMA geometría del visual. -->
-        <geometry>
-          <cylinder>
-            <radius>0.15</radius>
-            <length>0.2</length>
-          </cylinder>
-        </geometry>
+        <collision name="collision_base">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>0.2</length>
+            </cylinder>
+          </geometry>
+        </collision>
       </link>
 
       <!-- ESLABÓN 1 -->
       <link name="eslabon_1">
         <!-- TODO 4: ubica este link con <pose> encima de la base.        -->
+        <pose>0 0 0.5 0 0 0</pose>
         <!-- TODO 5: <inertial>, <visual> y <collision>                   -->
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.030833</ixx>
+            <iyy>0.030833</iyy>
+            <izz>0.001667</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
         <!--         (p. ej. una caja larga 0.1 x 0.1 x 0.6).             -->
+        <visual name="visual_eslabon_1">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.6</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.0 0.5 0.0 1</ambient>
+            <diffuse>1.0 0.5 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <collision name="collision_eslabon_1">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.6</size>
+            </box>
+          </geometry>
+        </collision>
       </link>
 
       <!-- TODO 6: JOINT base -> eslabon_1
            Tipo "revolute". Define <parent>, <child>, <axis><xyz> y unos
            <limit> realistas (p. ej. lower -1.57, upper 1.57). -->
+      <joint name="junta_1" type="revolute">
+        <parent>base</parent>
+        <child>eslabon_1</child>
+        <pose>0 0 -0.3 0 0 0</pose>
+        <axis>
+          <xyz>0 1 0</xyz>
+          <limit>
+            <lower>-1.57</lower>
+            <upper>1.57</upper>
+            <effort>20</effort>
+           
+          </limit>
+        </axis>
+      </joint>
 
       <!-- ESLABÓN 2 -->
       <link name="eslabon_2">
         <!-- TODO 7: ubícalo en el extremo del eslabón 1.                 -->
+        <pose>0 0 1.1 0 0 0</pose>
         <!-- TODO 8: <inertial>, <visual> y <collision>.                  -->
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.030833</ixx>
+            <iyy>0.030833</iyy>
+            <izz>0.001667</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual_eslabon_2">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.6</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.0 0.5 0.0 1</ambient>
+            <diffuse>1.0 0.5 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <collision name="collision_eslabon_2">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.6</size>
+            </box>
+          </geometry>
+        </collision>
+
       </link>
 
-      <!-- TODO 9: JOINT eslabon_1 -> eslabon_2 (revolute, con límites). -->
+      <joint name="junta_2" type="revolute">
+        <parent>eslabon_1</parent>
+        <child>eslabon_2</child>
+        <pose>0 0 -0.3 0 0 0</pose>
+        <axis>
+          <xyz>0 1 0</xyz>
+          <limit>
+            <lower>-1.57</lower>
+            <upper>1.57</upper>
+            <effort>20</effort>
+            
+          </limit>
+        </axis>
+      </joint>
 
-      <!-- TODO 10 (OBLIGATORIO): añade UN JointPositionController POR CADA
-           articulación, para poder comandar su ángulo por tópico y que el
-           brazo realmente se mueva. Sin <topic>, cada uno escucha en
-           /model/brazo/joint/<junta>/0/cmd_pos. Ajusta los nombres de junta.
-
-           <plugin filename="ignition-gazebo-joint-position-controller-system"
+      <plugin filename="ignition-gazebo-joint-position-controller-system"
                    name="ignition::gazebo::systems::JointPositionController">
-             <joint_name>junta_1</joint_name>
-             <p_gain>10</p_gain><i_gain>0.1</i_gain><d_gain>1</d_gain>
-           </plugin>
-           <!-- ... y otro plugin igual con <joint_name>junta_2</joint_name> ... -->
-      -->
+        <joint_name>junta_1</joint_name>
+        <topic>/model/brazo/joint/junta_1/0/cmd_pos</topic>
+        <p_gain>10</p_gain><i_gain>0.1</i_gain><d_gain>1</d_gain>
+        
+      </plugin>
+
+      <plugin filename="ignition-gazebo-joint-position-controller-system"
+                   name="ignition::gazebo::systems::JointPositionController">
+        <joint_name>junta_2</joint_name>
+        <topic>/model/brazo/joint/junta_2/0/cmd_pos</topic>
+        <p_gain>10</p_gain><i_gain>0.1</i_gain><d_gain>1</d_gain>
+        
+      </plugin>
 
     </model>
   </world>
