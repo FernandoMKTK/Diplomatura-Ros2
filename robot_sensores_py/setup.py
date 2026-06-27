@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'robot_sensores_py'
 
@@ -9,6 +11,9 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
+            (os.path.join('share', package_name, 'launch'), glob('launch/*')),
+            (os.path.join('share', package_name, 'worlds'), glob('worlds/*')),
+            (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
         ('share/' + package_name, ['package.xml']),
     ],
     install_requires=['setuptools'],
@@ -24,6 +29,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'mover_circulo = robot_sensores_py.mover_circulo:main',
         ],
     },
 )

@@ -11,6 +11,7 @@
   <depend>launch</depend>
   <depend>launch_ros</depend>
   <depend>ros_gz_bridge</depend>
+  <depend>rviz2</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>rosgraph_msgs</depend>

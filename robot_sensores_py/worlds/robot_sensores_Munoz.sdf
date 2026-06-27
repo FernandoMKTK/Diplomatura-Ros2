@@ -1,0 +1,377 @@
+<?xml version="1.0" ?>
+<!--
+  ============================================================================
+  TAREA — Dale sentidos a tu robot  (PLANTILLA)
+  ============================================================================
+  Este robot es de OTRO TIPO que el de clase: en vez de diferencial (2 ruedas),
+  es OMNIDIRECCIONAL con 4 ruedas mecanum. Puede avanzar, girar Y desplazarse
+  de lado (strafe). El cuerpo, las 4 ruedas, los joints, el plugin MecanumDrive
+  y TODO el mundo (física, luz, suelo, obstáculos y los SISTEMAS de sensores e
+  IMU) YA están hechos y funcionando.
+
+  TU TRABAJO: completar los cuatro bloques marcados con  «TODO ...»  dentro del
+  <link name="chasis">. No necesitas tocar nada más del archivo.
+
+    TODO 1: CÁMARA RGB     (type="camera")
+    TODO 2: LIDAR 2D       (type="gpu_lidar")
+    TODO 3: IMU            (type="imu")
+    TODO 4: SENSOR EXTRA a tu elección (depth, rgbd_camera, gps, contact, ...)
+
+  CÓMO PROBARLO:
+    ign gazebo -r plantilla_robot_sensores.sdf
+    ign topic -l        # tus tópicos van apareciendo conforme agregas sensores
+
+  MOVERLO (omnidireccional: fíjate en linear.y para ir de lado):
+    ign topic -t "/cmd_vel" -m ignition.msgs.Twist -p "linear: {x: 0.5}"   # adelante
+    ign topic -t "/cmd_vel" -m ignition.msgs.Twist -p "linear: {y: 0.5}"   # de lado
+  ============================================================================
+-->
+<sdf version="1.8">
+  <world name="mundo_tarea">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ====== SISTEMAS DEL MUNDO (ya listos, NO tocar) ================= -->
+    <plugin filename="ignition-gazebo-physics-system"
+            name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="ignition-gazebo-user-commands-system"
+            name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system"
+            name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <!-- Activa cámara y LIDAR (sensores de render): -->
+    <plugin filename="ignition-gazebo-sensors-system"
+            name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <!-- Activa los sensores IMU: -->
+    <plugin filename="ignition-gazebo-imu-system"
+            name="ignition::gazebo::systems::Imu"/>
+    <!-- Si tu sensor extra es de contacto, descomenta también esto:
+    <plugin filename="ignition-gazebo-contact-system"
+            name="ignition::gazebo::systems::Contact"/>
+    -->
+    <plugin filename="ignition-gazebo-navsat-system"
+        name="ignition::gazebo::systems::NavSat"/>
+
+    <light type="directional" name="sol">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="suelo">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Obstáculos para que tus sensores tengan algo que percibir. -->
+    <model name="caja_azul">
+      <static>true</static>
+      <pose>4 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1 1 1</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>1 1 1</size></box></geometry>
+          <material><ambient>0.1 0.2 0.8 1</ambient><diffuse>0.1 0.2 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="poste">
+      <static>true</static>
+      <pose>3 -2 0.75 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.2</radius><length>1.5</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>1.5</length></cylinder></geometry>
+          <material><ambient>0.8 0.6 0.1 1</ambient><diffuse>0.8 0.6 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ====== ROBOT OMNIDIRECCIONAL (ya hecho, NO tocar salvo los TODO) = -->
+    <model name="robot_omni" canonical_link="chasis">
+      <pose>0 0 0 0 0 0</pose>
+
+      <link name="chasis">
+        <pose relative_to="__model__">0 0 0.15 0 0 0</pose>
+        <inertial>
+          <mass>4.0</mass>
+          <inertia>
+            <ixx>0.09667</ixx><iyy>0.22667</iyy><izz>0.29667</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><box><size>0.8 0.5 0.2</size></box></geometry>
+          <material><ambient>0.6 0.1 0.7 1</ambient><diffuse>0.6 0.1 0.7 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>0.8 0.5 0.2</size></box></geometry>
+        </collision>
+
+        <!-- ============================================================= -->
+        <!-- TODO 1 — CÁMARA RGB                                           -->
+        <!--   Sugerencia: al frente (X positiva) mirando +X. Necesita     -->
+        <!--   <topic>, <update_rate>, <always_on> y un bloque <camera>    -->
+        <!--   con <image> (width/height/format) y <clip>.                 -->
+        <!-- ============================================================= -->
+        <sensor name="camara_rgb" type="camera">
+          <pose>1.0 0 0.2 0 0 0</pose>   <!-- al frente y un poco arriba -->
+          <topic>camara</topic>          <!-- gz topic: /camara -->
+          <update_rate>30</update_rate>  <!-- 30 imágenes por segundo -->
+          <always_on>1</always_on>
+          <visualize>true</visualize>
+          <camera>
+            <horizontal_fov>1.047</horizontal_fov>   <!-- ~60° de apertura -->
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>                <!-- color RGB de 8 bits -->
+            </image>
+            <clip>
+              <near>0.1</near>   <!-- más cerca de 0.1 m no se ve -->
+              <far>100</far>     <!-- más lejos de 100 m no se ve -->
+            </clip>
+          </camera>
+        </sensor>
+
+
+        <!-- ============================================================= -->
+        <!-- TODO 2 — LIDAR 2D (gpu_lidar)                                 -->
+        <!--   Sugerencia: arriba del chasis. <lidar> con <scan>           -->
+        <!--   horizontal (samples + ángulos) y vertical de 1 muestra,     -->
+        <!--   más un <range> min/max.                                     -->
+        <!-- ============================================================= -->
+        <sensor name="lidar_2d" type="gpu_lidar">
+          <pose>0 0 0.2 0 0 0</pose>     <!-- sobre el techo del chasis -->
+          <topic>escaner</topic>         <!-- gz topic: /escaner -->
+          <update_rate>10</update_rate>  <!-- 10 barridos por segundo -->
+          <always_on>1</always_on>
+          <visualize>true</visualize>
+          <lidar>
+            <scan>
+              <horizontal>
+                <samples>360</samples>        <!-- 360 rayos por barrido -->
+                <resolution>1</resolution>
+                <min_angle>-3.14159</min_angle>  <!-- -180° -->
+                <max_angle>3.14159</max_angle>   <!-- +180° (vuelta completa) -->
+              </horizontal>
+              <vertical>
+                <samples>1</samples>          <!-- 1 sola fila = LIDAR 2D -->
+                <resolution>1</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+              </vertical>
+            </scan>
+            <range>
+              <min>0.12</min>      <!-- distancia mínima medible -->
+              <max>12.0</max>      <!-- distancia máxima medible -->
+              <resolution>0.01</resolution>
+            </range>
+          </lidar>
+        </sensor>
+
+        <!-- ============================================================= -->
+        <!-- TODO 3 — IMU                                                  -->
+        <!--   En el centro del chasis. Añade <noise> gaussiano en         -->
+        <!--   angular_velocity y linear_acceleration (sensor realista).   -->
+        <!-- ============================================================= -->
+        <sensor name="imu_sensor" type="imu">
+          <pose>0 0 0 0 0 0</pose>       <!-- en el centro del chasis -->
+          <topic>imu</topic>             <!-- gz topic: /imu -->
+          <update_rate>100</update_rate> <!-- 100 muestras por segundo -->
+          <always_on>1</always_on>
+          <imu>
+            <angular_velocity>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></z>
+            </angular_velocity>
+            <linear_acceleration>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></z>
+            </linear_acceleration>
+          </imu>
+        </sensor>
+
+
+        <!-- ============================================================= -->
+        <!-- TODO 4 — SENSOR EXTRA (tú eliges)                             -->
+        <!--   depth_camera / rgbd_camera / gps / contact / force_torque / -->
+        <!--   logical_camera. Justifica tu elección en el README.         -->
+        <!-- ============================================================= -->
+
+        <!--CAMARA DE PROFUNDIDAD -->
+        <sensor name="depth_camera" type="depth_camera">
+          <pose>0.3 0 0.45 0 0 0</pose>
+          <topic>depth_camera</topic>
+          <update_rate>10</update_rate>
+          <always_on>true</always_on>
+          <visualize>true</visualize>
+
+          <camera>
+            <horizontal_fov>1.02974</horizontal_fov>
+
+            <image>
+              <width>640</width>
+              <height>480</height>
+            </image>
+
+            <clip>
+              <near>0.02</near>
+              <far>10</far>
+            </clip>
+
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+        </sensor>
+
+        <!-- GPS -->
+        <sensor name="navsat" type="navsat">
+          <pose>0 0 0.25 0 0 0</pose>
+          <topic>gps/fix</topic>
+          <update_rate>1</update_rate>
+          <always_on>true</always_on>
+          <gz_frame_id>gps_link</gz_frame_id>
+
+          <navsat>
+            <position_sensing>
+              <horizontal>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>0.5</stddev>
+                </noise>
+              </horizontal>
+              <vertical>
+                <noise type="gaussian">
+                  <mean>0.0</mean>
+                  <stddev>1.0</stddev>
+                </noise>
+              </vertical>
+            </position_sensing>
+          </navsat>
+        </sensor>
+
+      </link>
+
+      <!-- Las 4 ruedas mecanum (cilindros normales; el plugin hace la magia). -->
+      <link name="rueda_del_izq">
+        <pose relative_to="chasis">0.25 0.3 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.6</mass>
+          <inertia><ixx>0.003695</ixx><iyy>0.003695</iyy><izz>0.00675</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+        </collision>
+      </link>
+      <link name="rueda_del_der">
+        <pose relative_to="chasis">0.25 -0.3 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.6</mass>
+          <inertia><ixx>0.003695</ixx><iyy>0.003695</iyy><izz>0.00675</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+        </collision>
+      </link>
+      <link name="rueda_tra_izq">
+        <pose relative_to="chasis">-0.25 0.3 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.6</mass>
+          <inertia><ixx>0.003695</ixx><iyy>0.003695</iyy><izz>0.00675</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+        </collision>
+      </link>
+      <link name="rueda_tra_der">
+        <pose relative_to="chasis">-0.25 -0.3 0 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.6</mass>
+          <inertia><ixx>0.003695</ixx><iyy>0.003695</iyy><izz>0.00675</izz>
+            <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.08</length></cylinder></geometry>
+        </collision>
+      </link>
+
+      <!-- Cada rueda gira libremente sobre su eje (Z local tras la rotación). -->
+      <joint name="junta_del_izq" type="revolute">
+        <parent>chasis</parent><child>rueda_del_izq</child>
+        <axis><xyz>0 0 1</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+      <joint name="junta_del_der" type="revolute">
+        <parent>chasis</parent><child>rueda_del_der</child>
+        <axis><xyz>0 0 1</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+      <joint name="junta_tra_izq" type="revolute">
+        <parent>chasis</parent><child>rueda_tra_izq</child>
+        <axis><xyz>0 0 1</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+      <joint name="junta_tra_der" type="revolute">
+        <parent>chasis</parent><child>rueda_tra_der</child>
+        <axis><xyz>0 0 1</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+
+      <!-- Tracción OMNIDIRECCIONAL: traduce Twist (x, y, giro) a las 4 ruedas. -->
+      <plugin filename="ignition-gazebo-mecanum-drive-system"
+              name="ignition::gazebo::systems::MecanumDrive">
+        <front_left_joint>junta_del_izq</front_left_joint>
+        <front_right_joint>junta_del_der</front_right_joint>
+        <back_left_joint>junta_tra_izq</back_left_joint>
+        <back_right_joint>junta_tra_der</back_right_joint>
+        <wheel_separation>0.6</wheel_separation>
+        <wheelbase>0.5</wheelbase>
+        <wheel_radius>0.15</wheel_radius>
+        <topic>cmd_vel</topic>
+      </plugin>
+
+    </model>
+  </world>
+</sdf>
