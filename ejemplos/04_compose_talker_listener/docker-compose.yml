@@ -1,0 +1,40 @@
+# ============================================================================
+#  EJEMPLO 04 (NUEVO) — Dos contenedores ROS 2 hablando por una red Docker
+# ============================================================================
+#  El slide de "Docker Composer" lo explica en concepto; aquí está el archivo
+#  funcionando. Levantamos DOS contenedores con UN comando:
+#     - talker   -> publica en /chatter
+#     - listener -> se suscribe a /chatter
+#  Se descubren por DDS porque comparten la MISMA red Docker y el mismo
+#  ROS_DOMAIN_ID. Es la base de una arquitectura multi-contenedor de ROS 2.
+#
+#  LEVANTAR:  docker compose up
+#  APAGAR:    docker compose down   (en otra terminal, o Ctrl+C y luego down)
+# ============================================================================
+
+services:
+  talker:
+    build: .                       # construye desde el Dockerfile de esta carpeta
+    image: ros2-compose-demo       # nombre de la imagen resultante
+    container_name: talker
+    command: ros2 run demo_nodes_cpp talker
+    environment:
+      - ROS_DOMAIN_ID=42           # mismo dominio en ambos = se ven entre sí
+    networks:
+      - ros_net
+
+  listener:
+    image: ros2-compose-demo       # reutiliza la imagen que construyó 'talker'
+    container_name: listener
+    command: ros2 run demo_nodes_cpp listener
+    environment:
+      - ROS_DOMAIN_ID=42
+    depends_on:
+      - talker
+    networks:
+      - ros_net
+
+# Red propia del proyecto: aísla estos nodos de otros proyectos ROS.
+networks:
+  ros_net:
+    driver: bridge

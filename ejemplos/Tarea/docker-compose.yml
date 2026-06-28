@@ -1,0 +1,73 @@
+# ============================================================================
+#  PLANTILLA — Completa los TODO para tener TRES servicios:
+#    talker (dado)  ·  listener (TODO)  ·  grabador (TODO)
+#  + una red compartida (TODO) + un volumen con nombre para los bags (TODO)
+# ============================================================================
+
+services:
+  # --- talker: ya está hecho, úsalo de modelo --------------------------------
+  talker:
+    build: .
+    image: tarea-ros2
+    container_name: tarea_talker
+    command: ros2 run demo_nodes_cpp talker
+    environment:
+      - ROS_DOMAIN_ID=33
+    networks:
+      - robot_net
+
+  # --- listener: TODO --------------------------------------------------------
+  # Debe: usar image: tarea-ros2, correr `ros2 run demo_nodes_cpp listener`,
+  # mismo ROS_DOMAIN_ID, misma red, y depender de talker.
+  # listener:
+  #   ...
+  listener:
+    build: .
+    image: tarea-ros2
+    container_name: tarea_listener
+    command: ros2 run demo_nodes_cpp listener
+    environment:
+      - ROS_DOMAIN_ID=33
+    depends_on:
+      - talker
+    networks:
+      - robot_net
+
+  # --- grabador: TODO --------------------------------------------------------
+  # Debe: grabar el tópico /chatter con `ros2 bag` DENTRO de /bags, y montar
+  # ahí el volumen con nombre para que el bag persista.
+  # Pista de comando:
+  #   command: bash -c "rm -rf /bags/sesion && ros2 bag record -o /bags/sesion /chatter"
+  # Pista de volumen (dentro del servicio):
+  #   volumes:
+  #     - bags_volume:/bags
+  # grabador:
+  #   ...
+  grabador:
+    build: .
+    image: tarea-ros2
+    container_name: tarea_grabador
+    volumes:
+      - bags_volume:/bags
+    command: bash -c "rm -rf /bags/sesion && ros2 bag record -o /bags/sesion /chatter"
+    environment:
+      - ROS_DOMAIN_ID=33
+    networks:
+    - robot_net
+
+
+
+# TODO: define la red compartida 'robot_net' (driver: bridge).
+networks:
+  robot_net:
+    driver: bridge
+
+# TODO: declara el volumen con nombre 'bags_volume'.
+# (Tip: añade 'name: bags_volume' para fijar el nombre exacto, sin el prefijo
+#  del proyecto, y que los comandos de prueba funcionen tal cual.)
+# volumes:
+#   bags_volume:
+#     name: bags_volume
+volumes: # sección donde se declaran los volúmenes persistentes.
+  bags_volume: # Nombre lógico que usará Docker Compose dentro del archivo.
+    name: bags_volume
